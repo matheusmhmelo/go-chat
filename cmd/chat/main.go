@@ -1,14 +1,15 @@
 package main
 
 import (
+	"../../internal/websocket"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	go h.run()
+	go websocket.H.Run()
 
 	router := gin.New()
-	router.LoadHTMLFiles("index.html")
+	router.LoadHTMLFiles("../../public/index.html")
 
 	router.GET("/room/:roomId/:name", func(c *gin.Context) {
 		c.HTML(200, "index.html", nil)
@@ -17,7 +18,7 @@ func main() {
 	router.GET("/ws/:roomId/:name", func(c *gin.Context) {
 		roomId := c.Param("roomId")
 		name := c.Param("name")
-		serveWs(c.Writer, c.Request, roomId, name)
+		websocket.ServeWs(c.Writer, c.Request, roomId, name)
 	})
 
 	router.Run("0.0.0.0:8080")

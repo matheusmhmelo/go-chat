@@ -1,4 +1,4 @@
-package main
+package websocket
 
 import (
 	"fmt"
@@ -41,7 +41,7 @@ type connection struct {
 func (s subscription) readPump() {
 	c := s.conn
 	defer func() {
-		h.unregister <- s
+		H.unregister <- s
 		c.ws.Close()
 	}()
 	c.ws.SetReadLimit(maxMessageSize)
@@ -59,12 +59,11 @@ func (s subscription) readPump() {
 		if string(msg) == "/exit" {
 			c.ws.Close()
 		}
-		fmt.Println(s.name)
 		m := message{map[string]string{
 			"message": string(msg),
 			"name": s.name,
 		}, s.room, s.name}
-		h.broadcast <- m
+		H.broadcast <- m
 	}
 }
 
@@ -110,8 +109,8 @@ func (s *subscription) writePump() {
 }
 
 // serveWs handles websocket requests from the peer.
-func serveWs(w http.ResponseWriter, r *http.Request, roomId, name string) {
-	fmt.Print(roomId)
+func ServeWs(w http.ResponseWriter, r *http.Request, roomId, name string) {
+	fmt.Println(name, "has connected to room", roomId)
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err.Error())
@@ -119,7 +118,7 @@ func serveWs(w http.ResponseWriter, r *http.Request, roomId, name string) {
 	}
 	c := &connection{send: make(chan map[string]string, 256), ws: ws}
 	s := subscription{c, roomId, name}
-	h.register <- s
+	H.register <- s
 	go s.writePump()
 	go s.readPump()
 }

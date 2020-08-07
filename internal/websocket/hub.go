@@ -1,4 +1,4 @@
-package main
+package websocket
 
 type message struct {
 	data map[string]string
@@ -28,14 +28,14 @@ type hub struct {
 	unregister chan subscription
 }
 
-var h = hub{
+var H = hub{
 	broadcast:  make(chan message),
 	register:   make(chan subscription),
 	unregister: make(chan subscription),
 	rooms:      make(map[string]map[*connection]bool),
 }
 
-func (h *hub) run() {
+func (h *hub) Run() {
 	for {
 		select {
 		case s := <-h.register:
